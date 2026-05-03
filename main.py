@@ -1,5 +1,5 @@
-from fastapi import FastAPI, WebSocket, Request
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, WebSocket, Request, Form
+from fastapi.responses import FileResponse, RedirectResponse
 import asyncio
 import os
 import pty
@@ -9,7 +9,14 @@ app = FastAPI()
 # 🏠 Home page
 @app.get("/")
 def home():
-    return FileResponse("home.html")
+    return FileResponse("index.html")
+
+@app.post("/")
+async def login(username: str = Form(...), password: str = Form(...)):
+    if username == "admin" and password == "1234":
+        return FileResponse("home.html")
+    else:
+        return RedirectResponse(url="/", status_code=303)
 
 @app.post("/run")
 async def run_command(req: Request):
