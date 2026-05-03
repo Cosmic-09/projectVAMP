@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Home</title>
+
+  <style>
+body{
+    background-color: #000000;
+}
+#head{
+  color: rgb(0, 255, 0);
+  text-align: center;
+  margin: 50px;
+  font-size: 20px;
+  font-weight: bolder;
+}
+#buttons{
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 20px;
+}
+button {
+  height: 160px;
+  width: 430px;
+  font-size: 35px;
+  border-radius: 20px;
+  background-color: rgb(41, 37, 37);
+  color: rgb(0, 255, 0);
+  font-weight: bolder;
+}
+  </style>
+</head>
+
+<body>
+  <div id = "head">
+  <h1>command center</h1>
+  </div>
+  <div id = "buttons">
+  <button onclick="goToTerminal()">Open Terminal</button>
+  <button onclick="sendCommand('vsc')">Open VSC</button>
+  <button onclick="sendCommand('firefox')">Open firefox</button>
+  <button>sdj</button>
+  </div>
+
+  <script>
+    function sendCommand(cmd) {
+      fetch("/run", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ command: cmd })
+      })
+      .then(res => res.json())
+      .then(data => console.log(data));
+    }
+    function goToTerminal() {
+      window.location.href = "/terminal";
+    }
+  </script>
+</body>
+</html>
