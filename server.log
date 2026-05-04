@@ -1,0 +1,14 @@
+INFO:     Will watch for changes in these directories: ['/home/akshith/Desktop/projectVAMP']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [6230] using WatchFiles
+INFO:     Started server process [6234]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:47410 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47410 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:43026 - "POST / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54106 - "POST /run HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58202 - "GET /terminal HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58206 - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     149.154.161.197:0 - "GET / HTTP/1.1" 200 OK

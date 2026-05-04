@@ -45,6 +45,7 @@ button {
   <button onclick="sendCommand('firefox')">Open firefox</button>
   <button onclick="sendCommand('stop_server')">stop server</button>
   <button onclick="sendCommand('shutdown')">shutdown</button>
+  <button onclick="filesystem()">filesystem</button>
   <button onclick="logout()">Logout</button>
   </div>
 
@@ -72,6 +73,27 @@ button {
     }
     function goToTerminal() {
       window.location.href = "/terminal";
+    }
+    function filesystem(){
+      let password = prompt("enter your password:")
+      fetch("/filesystem", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        credentials: 'include',
+        body: new URLSearchParams({ password: password })
+      })
+      .then(res => res.text())
+      .then(html => {
+        if (html.includes("Wrong password")) {
+          alert("Wrong password")
+        } else {
+          document.open();
+          document.write(html);
+          document.close();
+        }
+      });
     }
     function logout() {
       fetch("/logout", {

@@ -1,0 +1,6 @@
+# Ignore local secret credentials
+app_secrets.py
+
+# Ignore virtual environment and cache
+venv/
+__pycache__/

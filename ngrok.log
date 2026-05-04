@@ -1,0 +1,35 @@
+t=2026-05-04T19:01:38+0530 lvl=info msg="no configuration paths supplied"
+t=2026-05-04T19:01:38+0530 lvl=info msg="using configuration at default config path" path=/home/akshith/.config/ngrok/ngrok.yml
+t=2026-05-04T19:01:38+0530 lvl=info msg="open config file" path=/home/akshith/.config/ngrok/ngrok.yml err=nil
+t=2026-05-04T19:01:38+0530 lvl=info msg="FIPS 140 mode" enabled=false
+t=2026-05-04T19:01:38+0530 lvl=warn msg="can't bind default web address, trying alternatives" obj=web addr=127.0.0.1:4040
+t=2026-05-04T19:01:38+0530 lvl=info msg="starting web service" obj=web addr=127.0.0.1:4041 allow_hosts=[]
+t=2026-05-04T19:01:38+0530 lvl=info msg="client session established" obj=tunnels.session
+t=2026-05-04T19:01:38+0530 lvl=info msg="tunnel session started" obj=tunnels.session
+t=2026-05-04T19:01:38+0530 lvl=info msg="started tunnel" obj=tunnels name=command_line addr=http://localhost:8000 url=https://trapeze-neurotic-bullion.ngrok-free.dev
+t=2026-05-04T19:04:43+0530 lvl=eror msg="heartbeat timeout, terminating session" obj=tunnels.session obj=csess id=75823dc9ca5a clientid=7cb50664d1a8106cd004df3b7bdeb3fb
+t=2026-05-04T19:04:43+0530 lvl=eror msg="session closed, starting reconnect loop" obj=tunnels.session obj=csess id=09591578e027 err="session closed"
+t=2026-05-04T19:04:43+0530 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com on 127.0.0.53:53: server misbehaving"
+t=2026-05-04T19:04:43+0530 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com on 127.0.0.53:53: server misbehaving"
+t=2026-05-04T19:04:44+0530 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com on 127.0.0.53:53: server misbehaving"
+t=2026-05-04T19:04:46+0530 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com on 127.0.0.53:53: server misbehaving"
+t=2026-05-04T19:04:50+0530 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com on 127.0.0.53:53: server misbehaving"
+t=2026-05-04T19:04:58+0530 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com on 127.0.0.53:53: server misbehaving"
+t=2026-05-04T19:05:14+0530 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com on 127.0.0.53:53: server misbehaving"
+t=2026-05-04T19:05:45+0530 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="failed to send authentication request: failed to fetch CRL. errors encountered: Get \"http://crl.ngrok-agent.com/ngrok.crl\": read tcp 192.168.31.127:37332->18.155.49.57:80: read: connection reset by peer"
+t=2026-05-04T19:06:16+0530 lvl=info msg="client session established" obj=tunnels.session
+t=2026-05-04T19:06:16+0530 lvl=info msg="tunnel session started" obj=tunnels.session
+t=2026-05-04T19:06:51+0530 lvl=eror msg="heartbeat timeout, terminating session" obj=tunnels.session obj=csess id=6d0f6b6b0156 clientid=7cb50664d1a8106cd004df3b7bdeb3fb
+t=2026-05-04T19:06:51+0530 lvl=eror msg="session closed, starting reconnect loop" obj=tunnels.session obj=csess id=09591578e027 err="session closed"
+t=2026-05-04T19:07:01+0530 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="failed to send authentication request: failed to fetch CRL. errors encountered: timed out fetching CRL"
+t=2026-05-04T19:07:02+0530 lvl=eror msg="failed to reconnect sessit=2026-05-04T19:10:31+0530 lvl=info msg="received stop request" obj=app stopReq="{err:<nil> restart:false}"
+e. Either\n1. stop your existing endpoint first, or\n2. start both endpoints with `--pooling-enabled` to load balance between them.\r\n\r\nERR_NGROK_334\r\n"
+t=2026-05-04T19:07:03+0530 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="The endpoint 'https://trapeze-neurotic-bullion.ngrok-free.dev' is already online. Either\n1. stop your existing endpoint first, or\n2. start both endpoints with `--pooling-enabled` to load balance between them.\r\n\r\nERR_NGROK_334\r\n"
+t=2026-05-04T19:07:06+0530 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="The endpoint 'https://trapeze-neurotic-bullion.ngrok-free.dev' is already online. Either\n1. stop your existing endpoint first, or\n2. start both endpoints with `--pooling-enabled` to load balance between them.\r\n\r\nERR_NGROK_334\r\n"
+t=2026-05-04T19:07:10+0530 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="The endpoint 'https://trapeze-neurotic-bullion.ngrok-free.dev' is already online. Either\n1. stop your existing endpoint first, or\n2. start both endpoints with `--pooling-enabled` to load balance between them.\r\n\r\nERR_NGROK_334\r\n"
+t=2026-05-04T19:07:18+0530 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="The endpoint 'https://trapeze-neurotic-bullion.ngrok-free.dev' is already online. Either\n1. stop your existing endpoint first, or\n2. start both endpoints with `--pooling-enabled` to load balance between them.\r\n\r\nERR_NGROK_334\r\n"
+t=2026-05-04T19:07:35+0530 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="The endpoint 'https://trapeze-neurotic-bullion.ngrok-free.dev' is already online. Either\n1. stop your existing endpoint first, or\n2. start both endpoints with `--pooling-enabled` to load balance between them.\r\n\r\nERR_NGROK_334\r\n"
+t=2026-05-04T19:08:05+0530 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="The endpoint 'https://trapeze-neurotic-bullion.ngrok-free.dev' is already online. Either\n1. stop your existing endpoint first, or\n2. start both endpoints with `--pooling-enabled` to load balance between them.\r\n\r\nERR_NGROK_334\r\n"
+t=2026-05-04T19:08:36+0530 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="The endpoint 'https://trapeze-neurotic-bullion.ngrok-free.dev' is already online. Either\n1. stop your existing endpoint first, or\n2. start both endpoints with `--pooling-enabled` to load balance between them.\r\n\r\nERR_NGROK_334\r\n"
+t=2026-05-04T19:09:16+0530 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: i/o timeout"
+t=2026-05-04T19:09:29+0530 lvl=info msg="received stop request" obj=app stopReq="{err:<nil> restart:false}"
