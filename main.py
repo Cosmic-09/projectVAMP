@@ -64,7 +64,7 @@ async def run_command(req: Request):
         if cmd_password != "akshith@123":
             return {"error":"wrong password"}
         else:
-            os.system("shutdown now")
+            os.system("sudo shutdown now")
     return {"status": "ok", "command": cmd}
 
 @app.get("/terminal")
