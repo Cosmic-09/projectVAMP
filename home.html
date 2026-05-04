@@ -43,20 +43,30 @@ button {
   <button onclick="goToTerminal()">Open Terminal</button>
   <button onclick="sendCommand('vsc')">Open VSC</button>
   <button onclick="sendCommand('firefox')">Open firefox</button>
-  <button>sdj</button>
+  <button onclick="sendCommand('stop_server')">stop server</button>
+  <button onclick="sendCommand('shutdown')">shutdown</button>
   </div>
 
   <script>
     function sendCommand(cmd) {
+      let password = null
+      if (cmd == "stop_server" || cmd == "shutdown") {
+        password = prompt("enter your password:")
+      }
+
       fetch("/run", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ command: cmd })
+        body: JSON.stringify({ command: cmd,password: password })
       })
       .then(res => res.json())
-      .then(data => console.log(data));
+      .then(data => {
+        if (data.error){
+          alert(data.error)
+        }
+      });
     }
     function goToTerminal() {
       window.location.href = "/terminal";

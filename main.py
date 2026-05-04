@@ -3,17 +3,21 @@ from fastapi.responses import FileResponse, RedirectResponse
 import asyncio
 import os
 import pty
+import subprocess
+import signal
 
 app = FastAPI()
 
-# 🏠 Home page
 @app.get("/")
 def home():
     return FileResponse("index.html")
 
 @app.post("/")
 async def login(username: str = Form(...), password: str = Form(...)):
-    if username == "admin" and password == "1234":
+
+    global main_password
+    if username == "admin" and password == "akshith@123":
+        main_password = password
         return FileResponse("home.html")
     else:
         return RedirectResponse(url="/", status_code=303)
@@ -22,21 +26,41 @@ async def login(username: str = Form(...), password: str = Form(...)):
 async def run_command(req: Request):
     data = await req.json()
     cmd = data.get("command")
-
+    cmd_password = data.get("password")
     if cmd == "vsc":
-        os.system("code &")
-    if cmd == "firefox":
-        os.system("firefox &")
+        open_app = "code"
+        output = os.popen(f"ps aux | grep {open_app} | grep -v grep").read()
+        if not (open_app in output):
+            subprocess.Popen(["code"])
+        else:
+            return{"error":"already opened"}
+            
+    elif cmd == "firefox":
+        output = os.popen(f"ps aux | grep {cmd} | grep -v grep").read()
+        if not (cmd in output):
+            subprocess.Popen(["firefox"])
+        else:
+            return{"error":"already opened"}
 
+    elif cmd == "stop_server":
+        if cmd_password != "akshith@123":
+            return {"error":"wrong password"}
+        os.kill(os.getpid(), signal.SIGTERM)
+
+    elif cmd == "shutdown":
+        if cmd_password != "akshith@123":
+            return {"error":"wrong password"}
+        else:
+            os.system("shutdown now")
     return {"status": "ok", "command": cmd}
 
-# 🖥 Terminal page
 @app.get("/terminal")
 def terminal_page():
-    return FileResponse("terminal.html")
+    if main_password == "akshith@123":
+        return FileResponse("terminal.html")
+    else:
+        return {"error": "you haven't loged in"}
 
-
-# 🔌 WebSocket terminal
 @app.websocket("/ws")
 async def terminal(ws: WebSocket):
     await ws.accept()
@@ -44,7 +68,6 @@ async def terminal(ws: WebSocket):
     pid, fd = pty.fork()
 
     if pid == 0:
-        # 🔥 Proper shell (IMPORTANT)
         os.environ["TERM"] = "xterm"
         os.execvp("bash", ["bash"])
     else:
@@ -67,7 +90,6 @@ async def terminal(ws: WebSocket):
                 try:
                     msg = await ws.receive_text()
 
-                    # 🚪 exit command
                     if msg.strip() == "exit":
                         await ws.send_text("\r\n👋 Closing terminal...\r\n")
                         await ws.close()
