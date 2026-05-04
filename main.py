@@ -1,29 +1,42 @@
 from fastapi import FastAPI, WebSocket, Request, Form
 from fastapi.responses import FileResponse, RedirectResponse
+from starlette.middleware.sessions import SessionMiddleware
 import asyncio
 import os
 import pty
 import subprocess
 import signal
-
 app = FastAPI()
+app.add_middleware(SessionMiddleware, secret_key=b"supersecretkey")
 
 @app.get("/")
-def home():
+def home(req: Request):
+    user = req.session.get("name")
+    if user == "admin":
+        return FileResponse("home.html")
     return FileResponse("index.html")
 
 @app.post("/")
-async def login(username: str = Form(...), password: str = Form(...)):
+async def login(request:Request ,username: str = Form(...), password: str = Form(...)):
 
-    global main_password
     if username == "admin" and password == "akshith@123":
-        main_password = password
+        request.session["name"] = username
         return FileResponse("home.html")
+        
     else:
         return RedirectResponse(url="/", status_code=303)
 
+@app.post("/logout")
+async def logout(request: Request):
+    request.session.clear()
+    return RedirectResponse(url="/", status_code=302)
+
 @app.post("/run")
 async def run_command(req: Request):
+    user = req.session.get("name")
+    if user != "admin":
+        return {"error": "not logged in"}
+
     data = await req.json()
     cmd = data.get("command")
     cmd_password = data.get("password")
@@ -55,11 +68,11 @@ async def run_command(req: Request):
     return {"status": "ok", "command": cmd}
 
 @app.get("/terminal")
-def terminal_page():
-    if main_password == "akshith@123":
-        return FileResponse("terminal.html")
-    else:
-        return {"error": "you haven't loged in"}
+def terminal_page(req: Request):
+    user = req.session.get("name")
+    if user != "admin":
+            return RedirectResponse(url="/", status_code=302)
+    return FileResponse("terminal.html")
 
 @app.websocket("/ws")
 async def terminal(ws: WebSocket):

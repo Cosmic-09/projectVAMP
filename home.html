@@ -45,6 +45,7 @@ button {
   <button onclick="sendCommand('firefox')">Open firefox</button>
   <button onclick="sendCommand('stop_server')">stop server</button>
   <button onclick="sendCommand('shutdown')">shutdown</button>
+  <button onclick="logout()">Logout</button>
   </div>
 
   <script>
@@ -59,6 +60,7 @@ button {
         headers: {
           "Content-Type": "application/json"
         },
+        credentials: 'include',
         body: JSON.stringify({ command: cmd,password: password })
       })
       .then(res => res.json())
@@ -70,6 +72,12 @@ button {
     }
     function goToTerminal() {
       window.location.href = "/terminal";
+    }
+    function logout() {
+      fetch("/logout", {
+        method: "POST",
+        credentials: 'include'
+      }).then(() => window.location.href = "/");
     }
   </script>
 </body>
