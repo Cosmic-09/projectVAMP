@@ -4,3 +4,8 @@ app_secrets.py
 # Ignore virtual environment and cache
 venv/
 __pycache__/
+
+uvicorn.log
+tunnel.log
+server.log
+ngrok.log

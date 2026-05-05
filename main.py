@@ -121,6 +121,7 @@ async def terminal(ws: WebSocket):
 
         await asyncio.gather(read_shell(), write_shell())
 
+
 def safe_path(path: str):
     if path is None:
         path = ""
@@ -230,7 +231,6 @@ pre {
 </style>
 """
 
-# 🏠 HOME
 @app.post("/filesystem", response_class=HTMLResponse)
 async def filesystem(req: Request, password: str = Form(...)):
     user = req.session.get("name")
