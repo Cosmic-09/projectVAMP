@@ -8,6 +8,11 @@ import subprocess
 import shutil
 import signal
 import urllib.parse
+import zipfile
+import tempfile
+from datetime import datetime
+import mimetypes
+import time
 
 from app_secrets import ADMIN_USERNAME, ADMIN_PASSWORD, SESSION_SECRET_KEY
 
@@ -15,6 +20,17 @@ from app_secrets import ADMIN_USERNAME, ADMIN_PASSWORD, SESSION_SECRET_KEY
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY)
 ROOT_DIR = "/home/akshith"
+
+def check_session(req: Request):
+    user = req.session.get("name")
+    if not user:
+        return None
+    last_active = req.session.get("last_active")
+    if last_active and time.time() - last_active > 3600:  # 1 hour timeout
+        req.session.clear()
+        return None
+    req.session["last_active"] = time.time()
+    return user
 
 @app.get("/")
 def home(req: Request):
@@ -28,6 +44,7 @@ async def login(request:Request ,username: str = Form(...), password: str = Form
 
     if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
         request.session["name"] = username
+        request.session["last_active"] = time.time()
         return FileResponse("home.html")
         
     else:
@@ -76,9 +93,9 @@ async def run_command(req: Request):
 
 @app.get("/terminal")
 def terminal_page(req: Request):
-    user = req.session.get("name")
-    if user != ADMIN_USERNAME:
-            return RedirectResponse(url="/", status_code=302)
+    user = check_session(req)
+    if not user:
+        return RedirectResponse(url="/", status_code=302)
     return FileResponse("terminal.html")
 
 @app.websocket("/ws")
@@ -144,7 +161,7 @@ STYLE = """
 body {
     margin: 0;
     font-family: Arial;
-    background: #0f172a;
+    background: black;
     color: #e2e8f0;
     padding: 10px;
 }
@@ -155,14 +172,14 @@ body {
 }
 
 .box {
-    background: #1e293b;
+    background: #242724;
     padding: 12px;
     border-radius: 10px;
     margin-top: 10px;
 }
 
 a {
-    color: #38bdf8;
+    color: lime;
     text-decoration: none;
     margin-right: 10px;
     display: inline-block;
@@ -173,6 +190,7 @@ a {
     border-bottom: 1px solid #334155;
     display: flex;
     flex-direction: column;
+    flex-wrap: wrap;
     gap: 6px;
 }
 
@@ -209,9 +227,20 @@ pre {
 
 /* 📱 MOBILE */
 @media (max-width: 600px) {
+
+    .file {
+        flex-direction: row;
+        align-items: center;
+    }
     a {
         display: block;
         margin: 6px 0;
+    }
+    #head{
+        display:flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-around;
     }
 }
 
@@ -219,7 +248,6 @@ pre {
 @media (min-width: 768px) {
     .file {
         flex-direction: row;
-        justify-content: space-between;
         align-items: center;
     }
 
@@ -233,8 +261,8 @@ pre {
 
 @app.post("/filesystem", response_class=HTMLResponse)
 async def filesystem(req: Request, password: str = Form(...)):
-    user = req.session.get("name")
-    if user != ADMIN_USERNAME:
+    user = check_session(req)
+    if not user:
         return RedirectResponse(url="/", status_code=302)
     
     if password != ADMIN_PASSWORD:
@@ -253,7 +281,6 @@ async def filesystem(req: Request, password: str = Form(...)):
         <div class='box'>
             <a href='/'>🏠 Home</a>
             <a href='/browse?path=/'>📂 Open root</a>
-            <a href='/'>🚪 Exit</a>
         </div>
 
         <div class='box'>
@@ -270,8 +297,8 @@ async def filesystem(req: Request, password: str = Form(...)):
 # 📂 BROWSE
 @app.get("/browse", response_class=HTMLResponse)
 def browse(req: Request, path: str = "/"):
-    user = req.session.get("name")
-    if user != ADMIN_USERNAME:
+    user = check_session(req)
+    if not user:
         return RedirectResponse(url="/", status_code=302)
     
     full_path = safe_path(path)
@@ -290,10 +317,9 @@ def browse(req: Request, path: str = "/"):
     <div class='container'>
         <h3>📂 {path}</h3>
 
-        <div class='box'>
+        <div class='box' id = 'head'>
             <a href='/'>🏠 Home</a>
             <a href='javascript:history.back()'>⬅ Back</a>
-            <a href='/'>🚪 Exit</a>
         </div>
 
         <div class='box'>
@@ -308,6 +334,9 @@ def browse(req: Request, path: str = "/"):
             html += f"""
             <div class='file'>
                 📁 <a href='/browse?path={item_query}'>{item}</a>
+                <div class='actions'>
+                    <a href='/download_folder?path={item_query}'>⬇ Download</a>
+                </div>
             </div>
             """
         else:
@@ -329,7 +358,16 @@ def browse(req: Request, path: str = "/"):
             <form action='/upload' method='post' enctype='multipart/form-data'>
                 <input type='hidden' name='path' value='{path}'>
                 <input type='file' name='file'>
-                <button type='submit'>Upload</button>
+                <button type='submit'>Upload File</button>
+            </form>
+        </div>
+
+        <div class='box'>
+            <h3>📁 Upload Folder</h3>
+            <form action='/upload_folder' method='post' enctype='multipart/form-data'>
+                <input type='hidden' name='path' value='{path}'>
+                <input type='file' name='files' multiple>
+                <button type='submit'>Upload Files as Folder</button>
             </form>
         </div>
 
@@ -343,8 +381,8 @@ def browse(req: Request, path: str = "/"):
 # 👁 VIEW
 @app.get("/view", response_class=HTMLResponse)
 def view(req: Request, path: str):
-    user = req.session.get("name")
-    if user != ADMIN_USERNAME:
+    user = check_session(req)
+    if not user:
         return RedirectResponse(url="/", status_code=302)
     
     full_path = safe_path(path)
@@ -353,26 +391,40 @@ def view(req: Request, path: str):
     if os.path.isdir(full_path):
         return "Cannot view a directory"
 
-    with open(full_path, "r", errors="ignore") as f:
-        content = f.read(5000)
+    mime_type, _ = mimetypes.guess_type(full_path)
+    if mime_type and mime_type.startswith('image/'):
+        return f"""
+        <html>
+        <head>{STYLE}</head>
+        <body>
+        <div class='container box'>
+            <h3>{path}</h3>
+            <img src='/download?path={urllib.parse.quote(path)}' style='max-width:100%;'>
+        </div>
+        </body>
+        </html>
+        """
+    else:
+        with open(full_path, "r", errors="ignore") as f:
+            content = f.read(5000)
 
-    return f"""
-    <html>
-    <head>{STYLE}</head>
-    <body>
-    <div class='container box'>
-        <h3>{path}</h3>
-        <pre>{content}</pre>
-    </div>
-    </body>
-    </html>
-    """
+        return f"""
+        <html>
+        <head>{STYLE}</head>
+        <body>
+        <div class='container box'>
+            <h3>{path}</h3>
+            <pre>{content}</pre>
+        </div>
+        </body>
+        </html>
+        """
 
 # ⬇ DOWNLOAD
 @app.get("/download")
 def download(req: Request, path: str):
-    user = req.session.get("name")
-    if user != ADMIN_USERNAME:
+    user = check_session(req)
+    if not user:
         return RedirectResponse(url="/", status_code=302)
     
     full_path = safe_path(path)
@@ -380,17 +432,70 @@ def download(req: Request, path: str):
         return RedirectResponse(url='/', status_code=302)
     return FileResponse(full_path, filename=os.path.basename(full_path))
 
+# ⬇ DOWNLOAD FOLDER
+@app.get("/download_folder")
+def download_folder(req: Request, path: str):
+    user = check_session(req)
+    if not user:
+        return RedirectResponse(url="/", status_code=302)
+    
+    full_path = safe_path(path)
+    if not os.path.exists(full_path) or not os.path.isdir(full_path):
+        return RedirectResponse(url='/', status_code=302)
+    
+    # Create a temporary zip file
+    with tempfile.NamedTemporaryFile(suffix='.zip', delete=False) as tmp:
+        zip_path = tmp.name
+    
+    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for root, dirs, files in os.walk(full_path):
+            for file in files:
+                file_path = os.path.join(root, file)
+                arcname = os.path.relpath(file_path, os.path.dirname(full_path))
+                zipf.write(file_path, arcname)
+    
+    folder_name = os.path.basename(full_path)
+    return FileResponse(zip_path, filename=f"{folder_name}.zip", media_type='application/zip')
+
 # 📤 UPLOAD
 @app.post("/upload")
 async def upload(req: Request, path: str = Form(...), file: UploadFile = File(...)):
-    user = req.session.get("name")
-    if user != ADMIN_USERNAME:
+    user = check_session(req)
+    if not user:
         return RedirectResponse(url="/", status_code=302)
     
     target = safe_path(path)
-    file_path = os.path.join(target, file.filename)
+    filename = file.filename.rstrip('/')  # Remove trailing slash if present
+    file_path = os.path.join(target, filename)
+
+    if os.path.exists(file_path) and os.path.isdir(file_path):
+        return "Cannot overwrite a directory with a file"
 
     with open(file_path, "wb") as f:
         shutil.copyfileobj(file.file, f)
 
+    return RedirectResponse(url=f"/browse?path={path}", status_code=303)
+
+# 📁 UPLOAD FOLDER
+@app.post("/upload_folder")
+async def upload_folder(req: Request, path: str = Form(...), files: list[UploadFile] = File(...)):
+    user = check_session(req)
+    if not user:
+        return RedirectResponse(url="/", status_code=302)
+    
+    target = safe_path(path)
+    
+    # Create a new folder with timestamp
+    folder_name = f"upload_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    folder_path = os.path.join(target, folder_name)
+    os.makedirs(folder_path, exist_ok=True)
+    
+    for file in files:
+        filename = file.filename
+        if not filename:
+            continue
+        file_path = os.path.join(folder_path, filename)
+        with open(file_path, "wb") as f:
+            shutil.copyfileobj(file.file, f)
+    
     return RedirectResponse(url=f"/browse?path={path}", status_code=303)        
