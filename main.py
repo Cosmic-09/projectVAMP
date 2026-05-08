@@ -13,6 +13,7 @@ import tempfile
 from datetime import datetime
 import mimetypes
 import time
+import psutil
 
 from app_secrets import ADMIN_USERNAME, ADMIN_PASSWORD, SESSION_SECRET_KEY
 
@@ -20,6 +21,49 @@ from app_secrets import ADMIN_USERNAME, ADMIN_PASSWORD, SESSION_SECRET_KEY
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY)
 ROOT_DIR = "/home/akshith"
+
+@app.get("/system_status")
+def get_system_status():
+    cpu_percent = psutil.cpu_percent(interval=1)
+    
+    # Memory usage
+    memory = psutil.virtual_memory()
+    memory_percent = memory.percent
+    memory_used = memory.used / (1024**3)  # GB
+    memory_total = memory.total / (1024**3)  # GB
+    
+    # CPU temperature (Linux specific)
+    try:
+        with open('/sys/class/thermal/thermal_zone0/temp', 'r') as f:
+            temp_raw = int(f.read().strip())
+            cpu_temp = temp_raw / 1000.0  # Convert from millidegrees to degrees
+    except:
+        cpu_temp = None
+    
+    # Disk usage
+    disk = psutil.disk_usage('/')
+    disk_percent = disk.percent
+    disk_used = disk.used / (1024**3)  # GB
+    disk_total = disk.total / (1024**3)  # GB
+    
+    # Battery (if laptop)
+    try:
+        battery = psutil.sensors_battery()
+        battery_percent = battery.percent if battery else None
+    except:
+        battery_percent = None
+    
+    return {
+        "cpu_usage": cpu_percent,
+        "memory_usage": memory_percent,
+        "memory_used_gb": round(memory_used, 2),
+        "memory_total_gb": round(memory_total, 2),
+        "cpu_temp_celsius": cpu_temp,
+        "disk_usage": disk_percent,
+        "disk_used_gb": round(disk_used, 2),
+        "disk_total_gb": round(disk_total, 2),
+        "battery_percent": battery_percent
+    }
 
 def check_session(req: Request):
     user = req.session.get("name")
@@ -88,8 +132,15 @@ async def run_command(req: Request):
         if cmd_password != ADMIN_PASSWORD:
             return {"error":"wrong password"}
         else:
-            os.system("sudo shutdown now")
+            os.system("shutdown now")
     return {"status": "ok", "command": cmd}
+
+@app.get("/system_status")
+def system_status(req: Request):
+    user = check_session(req)
+    if not user:
+        return {"error": "not logged in"}
+    return get_system_status()
 
 @app.get("/terminal")
 def terminal_page(req: Request):

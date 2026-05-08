@@ -6,6 +6,7 @@
   <style>
 body{
     background-color: #000000;
+    display: block;
 }
 #head{
   color: rgb(0, 255, 0);
@@ -16,7 +17,6 @@ body{
 }
 #buttons{
   margin: 0;
-  height: 100vh;
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
@@ -68,8 +68,11 @@ button {
   <button onclick="sendCommand('stop_server')">stop server</button>
   <button onclick="sendCommand('shutdown')">shutdown</button>
   <button onclick="filesystem()">filesystem</button>
+  <button onclick="showSystemStatus()">System Status</button>
   <button onclick="logout()">Logout</button>
   </div>
+
+  <div id="system-status" style="display:none; margin: 20px auto; max-width: 600px; color: rgb(0, 255, 0); background: #111; padding: 20px; border-radius: 8px; font-family: monospace;"></div>
 
   <script>
     function sendCommand(cmd) {
@@ -81,10 +84,10 @@ button {
       fetch("/run", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          'Content-Type': 'application/json'
         },
         credentials: 'include',
-        body: JSON.stringify({ command: cmd,password: password })
+        body: JSON.stringify({ command: cmd, password: password })
       })
       .then(res => res.json())
       .then(data => {
@@ -122,6 +125,33 @@ button {
         method: "POST",
         credentials: 'include'
       }).then(() => window.location.href = "/");
+    }
+
+    function showSystemStatus() {
+      fetch('/system_status', {
+        method: 'GET',
+        credentials: 'include'
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          alert(data.error);
+          return;
+        }
+        let statusDiv = document.getElementById('system-status');
+        statusDiv.innerHTML = `
+          <h3>System Status</h3>
+          <p>CPU Usage: ${data.cpu_usage}%</p>
+          <p>Memory Usage: ${data.memory_usage}% (${data.memory_used_gb} GB / ${data.memory_total_gb} GB)</p>
+          <p>CPU Temperature: ${data.cpu_temp_celsius ? data.cpu_temp_celsius + ' °C' : 'N/A'}</p>
+          <p>Disk Usage: ${data.disk_usage}% (${data.disk_used_gb} GB / ${data.disk_total_gb} GB)</p>
+          <p>Battery: ${data.battery_percent ? data.battery_percent + '%' : 'N/A'}</p>
+        `;
+        statusDiv.style.display = 'block';
+      })
+      .catch(err => {
+        alert('Error fetching system status');
+      });
     }
   </script>
 </body>
