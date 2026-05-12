@@ -1,29 +1,3 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Terminal</title>
-
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.css">
-
-  <style>
-    body {
-      margin: 0;
-      background: black;
-    }
-    #terminal {
-      width: 100vw;
-      height: 100vh;
-    }
-  </style>
-</head>
-
-<body>
-<div id="terminal"></div>
-
-<script src="https://cdn.jsdelivr.net/npm/xterm/lib/xterm.js"></script>
-
-<script>
 const term = new Terminal({
   convertEol: true,
   scrollback: 1000,
@@ -64,7 +38,3 @@ term.onData(data => {
     ws.send(data);
   }
 });
-</script>
-
-</body>
-</html>

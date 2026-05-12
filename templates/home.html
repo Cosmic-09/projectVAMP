@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Home</title>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <link rel="stylesheet" href="/static/css/home.css">
+</head>
+
+<body>
+  <div id = "head">
+  <h1>command center</h1>
+  </div>
+  <div id = "buttons">
+  <button onclick="goToTerminal()">Open Terminal</button>
+  <button onclick="sendCommand('vsc')">Open VSC</button>
+  <button onclick="sendCommand('firefox')">Open firefox</button>
+  <button onclick="sendCommand('stop_server')">stop server</button>
+  <button onclick="sendCommand('shutdown')">shutdown</button>
+  <button onclick="filesystem()">filesystem</button>
+  <button onclick="showSystemStatus()">System Status</button>
+  <button onclick="logout()">Logout</button>
+  </div>
+
+  <div id="system-status"></div>
+
+  <script src="/static/js/home.js"></script>
+</body>
+</html>
